@@ -7,7 +7,6 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @Service
 public class CountServiceImpl implements CountService {
@@ -45,10 +44,13 @@ public class CountServiceImpl implements CountService {
 
     @Override
     public CountDto increment(String name) {
-        CountDto countDto = getCount(name);
-        countDto.setAccumulator(countDto.getAccumulator() + 1);
-        countStore.saveCount(countDto);
-        return countDto;
+        Map<String, CountDto> countDtoMap = countStore.getCounts();
+        countDtoMap.computeIfPresent(name, (key, value) -> {
+           value.setAccumulator(value.getAccumulator() + 1);
+           return value;
+        });
+
+        return countDtoMap.get(name);
     }
 
     @Override
